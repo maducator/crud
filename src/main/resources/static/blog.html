@@ -7,7 +7,7 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
     </head>
     <body>
-        <section id="app">
+        <section id="app" class="container">
             <h1>{{ title }}</h1>
             <p v-html="contents"></p>
             <button @click="list" class="btn btn-primary">listing</button>
@@ -25,6 +25,7 @@
             </form>
 
             <table class="table table-striped">
+                <caption style="caption-side: top;" class="text-end">total: {{ index.total }}</caption>
                 <thead>
                     <tr>
                         <th>id</th>
@@ -36,7 +37,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="row in blogList">
+                    <tr v-for="row in index.list">
                         <td>{{ row.id }}</td>
                         <td>{{ row.title }}</td>
                         <td>{{ row.contents }}</td>
@@ -49,49 +50,12 @@
                     </tr>
                 </tbody>
             </table>
+
+            <pagination :search="get" :page="get.page" :rows="get.rows" :total="index.total" @update="list"></pagination>
         </section>
 
-<script>
-Vue.createApp({
-    data() {
-        return {
-            title: '<b>Blog</b>',
-            contents: '<b>this is Blog</b>',
-            blogList: [],
-            post: {
-                title: "",
-                contents: "",
-            }
-        };
-    },
-    mounted() {
-        this.list();
-    },
-    methods: {
-        list() {
-            $.get('/blog/')
-            .done( res => {
-                this.blogList = res;
-                this.blogList.forEach( row => row.created = row.created.substring(0,10));
-            });
-        },
-        save() {
-            $.post('/blog/save', this.post)
-            .done( res => {
-                this.post = { title: '', contents: '' };
-                this.list();
-            });
-        },
-        edit(row) {
-            this.post = row;
-        },
-        remove( id ) {
-            $.get('/blog/delete', { id: id })
-            .done( res => { this.list() });
-        }
-    }
-}).mount('#app');
-</script>
+<script src="pagination.js"></script>
+<script src="script.js"></script>
 
     </body>
 </html>

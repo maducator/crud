@@ -1,5 +1,6 @@
 package cjedu.crud.blog;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,13 +12,47 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
+@Slf4j
 class BlogController {
     @Autowired
     BlogRepository repos;
 
     @GetMapping("blog")
-    List<Blog> index() {
+    HashMap<String, Object> index(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int rows) {
+        if( page < 1 ) {
+            page = 1;
+        }
+        if( page >= 1 ) {
+            page = page - 1;
+        }
+        Page<Blog> result = repos.findAll(PageRequest.of(page, rows));
+        var rv = new HashMap<String, Object>();
+        rv.put("total", result.getTotalElements());
+        rv.put("list", result.getContent());
+        return rv;
+    }
+
+    @GetMapping("blog/pages")
+    Page<Blog> pages(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int rows) {
+        if( page < 1 ) {
+            page = 1;
+        }
+        if( page >= 1 ) {
+            page = page - 1;
+        }
+        log.info("page: " + page);
+        return repos.findAll(PageRequest.of(page, rows));
+    }
+
+    @GetMapping("blog/all")
+    List<Blog> all() {
         return repos.findAll();
     }
 
@@ -33,7 +68,7 @@ class BlogController {
         if( page < 1 ) {
             page = 1;
         }
-        if( page > 1 ) {
+        if( page >= 1 ) {
             page = page - 1;
         }
         return repos.findByTitle("이걸로 계속 저장하면 되겠네.", PageRequest.of(page,size));
